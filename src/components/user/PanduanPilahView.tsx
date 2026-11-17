@@ -5,7 +5,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import { ILLUSTRATED_ITEMS } from '../../data/initialData';
+import { ILLUSTRATED_ITEMS } from '../../data/campusSeedData';
 import { WasteCategory } from '../../types';
 import { analyzeWasteImage, WasteAnalysisResult, VISUAL_DATABASE } from '../../utils/aiVisionWasteClassifier';
 import {

@@ -194,7 +194,11 @@ async function startServer() {
     return res.json({ ok: true });
   });
 
-  // ==================== STATE ROUTE ====================
+  // ==================== HEALTH & STATE ROUTES ====================
+
+  app.get('/api/health', (_req, res) => {
+    return res.json({ ok: true, mode: 'server' });
+  });
 
   app.get('/api/state', (_req, res) => {
     return res.json(getFullState());
@@ -454,7 +458,7 @@ Kembalikan JSON murni tanpa markdown dengan format:
   }
 
   httpServer.listen(port, '0.0.0.0', () => {
-    console.log(`Server running on http://0.0.0.0:${port}`);
+    console.log(`Server running on http://localhost:${port} (http://0.0.0.0:${port})`);
   });
 }
 

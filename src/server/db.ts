@@ -2,11 +2,11 @@ import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-  INITIAL_BINS,
-  INITIAL_REPORTS,
-  INITIAL_VOUCHERS,
-  INITIAL_REDEMPTIONS
-} from '../data/initialData';
+  SEED_BINS as INITIAL_BINS,
+  SEED_REPORTS as INITIAL_REPORTS,
+  SEED_VOUCHERS as INITIAL_VOUCHERS,
+  SEED_REDEMPTIONS as INITIAL_REDEMPTIONS
+} from '../data/campusSeedData';
 import {
   AuthRole,
   AuthUser,

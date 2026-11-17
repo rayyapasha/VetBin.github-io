@@ -320,7 +320,8 @@ export async function analyzeWasteImage(
 
       clearTimeout(timeoutId);
 
-      if (apiResponse.ok) {
+      const contentType = apiResponse.headers.get('content-type') || '';
+      if (apiResponse.ok && contentType.includes('application/json')) {
         const data = await apiResponse.json();
         if (!data.fallback && data.itemName && data.category) {
           const cat = data.category as WasteCategory;
