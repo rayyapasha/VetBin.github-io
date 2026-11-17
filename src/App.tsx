@@ -14,8 +14,8 @@ import { BerandaView } from './components/user/BerandaView';
 import { PetaTongView } from './components/user/PetaTongView';
 import { PanduanPilahView } from './components/user/PanduanPilahView';
 import { LaporTongView } from './components/user/LaporTongView';
-import { PetugasRouteView } from './components/user/PetugasRouteView';
 import { PoinDampakView } from './components/user/PoinDampakView';
+import { PetugasPortalView } from './components/petugas/PetugasPortalView';
 import { AdminSidebar } from './components/admin/AdminSidebar';
 import { AdminRingkasanView } from './components/admin/AdminRingkasanView';
 import { AdminTitikTongView } from './components/admin/AdminTitikTongView';
@@ -38,7 +38,7 @@ import { LoginModal } from './components/modals/LoginModal';
 import { CampusBin, CampusVoucher, UserReport } from './types';
 
 const MainAppContent: React.FC = () => {
-  const { isAdminView, authUser, userTab, setUserTab, adminTab, bins, isOnboardingOpen, setIsOnboardingOpen } = useApp();
+  const { isAdminView, isPetugasView, authUser, userTab, setUserTab, adminTab, bins, isOnboardingOpen, setIsOnboardingOpen } = useApp();
 
   // Modals state
   const [isTambahTongOpen, setIsTambahTongOpen] = useState(false);
@@ -103,8 +103,11 @@ const MainAppContent: React.FC = () => {
             </AnimatePresence>
           </main>
         </div>
+      ) : isPetugasView && authUser?.role === 'petugas' ? (
+        /* Dedicated Petugas Portal matching flowchart structure */
+        <PetugasPortalView />
       ) : (
-        /* User Website View (Pages 1, 2, 3, 4, 5, 6, 7) */
+        /* User Website View (no Petugas tab for non-logged-in / regular users) */
         <div className="flex-1 flex flex-col">
           <Navbar />
           <main className="flex-1 pb-20 md:pb-0 overflow-x-hidden">
@@ -124,7 +127,6 @@ const MainAppContent: React.FC = () => {
                 )}
                 {userTab === 'panduan' && <PanduanPilahView />}
                 {userTab === 'lapor' && <LaporTongView />}
-                {userTab === 'petugas' && <PetugasRouteView />}
                 {userTab === 'poin' && (
                   <PoinDampakView
                     onOpenScanModal={() => setIsScanModalOpen(true)}

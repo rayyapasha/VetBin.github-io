@@ -88,7 +88,7 @@ export interface UserImpactProfile {
   improvementPercent: number;
 }
 
-export type AuthRole = 'admin' | 'user';
+export type AuthRole = 'admin' | 'petugas' | 'user';
 
 export interface AuthUser {
   id: string;

@@ -196,9 +196,6 @@ export const LaporTongView: React.FC = () => {
       if (created) {
         setReportText('');
         setPhotoPreview(null);
-        setTimeout(() => {
-          setUserTab('petugas');
-        }, 800);
       }
     } finally {
       setIsSubmitting(false);

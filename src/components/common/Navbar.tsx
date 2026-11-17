@@ -20,7 +20,9 @@ export const Navbar: React.FC = () => {
     userTab,
     setUserTab,
     setIsAdminView,
+    setIsPetugasView,
     setAdminTab,
+    setPetugasTab,
     setIsOnboardingOpen,
     authUser,
     openLoginModal,
@@ -34,7 +36,6 @@ export const Navbar: React.FC = () => {
     { id: 'panduan', label: 'Panduan Pilah', icon: <Sparkles className="w-4 h-4" /> },
     { id: 'lapor', label: 'Lapor', icon: <AlertCircle className="w-4 h-4" /> },
     { id: 'poin', label: 'Poin & Dampak', icon: <Award className="w-4 h-4" /> },
-    { id: 'petugas', label: 'Petugas', icon: <Truck className="w-4 h-4" /> },
   ];
 
   const handleOpenAdmin = () => {
@@ -43,6 +44,15 @@ export const Navbar: React.FC = () => {
       setAdminTab('ringkasan');
     } else {
       openLoginModal('admin');
+    }
+  };
+
+  const handleOpenPetugas = () => {
+    if (authUser?.role === 'petugas') {
+      setIsPetugasView(true);
+      setPetugasTab('beranda');
+    } else {
+      openLoginModal('petugas');
     }
   };
 
@@ -131,15 +141,26 @@ export const Navbar: React.FC = () => {
             </button>
           )}
 
-          {/* Admin Switcher / Admin Login Button */}
-          <button
-            onClick={handleOpenAdmin}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold text-[#234629] bg-[#EAEFEA] hover:bg-[#DCE6DC] border border-[#234629]/20 transition-all cursor-pointer"
-            title={authUser?.role === 'admin' ? 'Buka Dashboard Admin Kampus' : 'Login sebagai Admin Kampus'}
-          >
-            <Shield className="w-4 h-4 text-[#234629]" />
-            <span>{authUser?.role === 'admin' ? 'Dashboard Admin' : 'Admin Kampus'}</span>
-          </button>
+          {/* Role-specific Portal Button or Petugas/Admin Access */}
+          {authUser?.role === 'petugas' ? (
+            <button
+              onClick={handleOpenPetugas}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold text-[#234629] bg-[#EAEFEA] hover:bg-[#DCE6DC] border border-[#234629]/20 transition-all cursor-pointer whitespace-nowrap"
+              title="Kembali ke Beranda Petugas"
+            >
+              <Truck className="w-4 h-4 text-[#234629]" />
+              <span>Beranda Petugas</span>
+            </button>
+          ) : (
+            <button
+              onClick={handleOpenAdmin}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold text-[#234629] bg-[#EAEFEA] hover:bg-[#DCE6DC] border border-[#234629]/20 transition-all cursor-pointer whitespace-nowrap"
+              title={authUser?.role === 'admin' ? 'Buka Dashboard Admin Kampus' : 'Login sebagai Admin Kampus'}
+            >
+              <Shield className="w-4 h-4 text-[#234629]" />
+              <span>{authUser?.role === 'admin' ? 'Dashboard Admin' : 'Admin Kampus'}</span>
+            </button>
+          )}
 
           {/* Mobile hamburger */}
           <button
@@ -212,6 +233,16 @@ export const Navbar: React.FC = () => {
             >
               <HelpCircle className="w-4 h-4 text-emerald-600" />
               Panduan Penggunaan VetBin
+            </button>
+            <button
+              onClick={() => {
+                handleOpenPetugas();
+                setMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-amber-900 bg-amber-50 border border-amber-200/70"
+            >
+              <Truck className="w-4 h-4 text-amber-700" />
+              <span>{authUser?.role === 'petugas' ? 'Buka Beranda Petugas' : 'Masuk Portal Petugas'}</span>
             </button>
             <button
               onClick={() => {

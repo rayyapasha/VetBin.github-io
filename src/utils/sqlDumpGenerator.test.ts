@@ -38,6 +38,19 @@ test('generatePhpMyAdminSqlDump emits valid phpMyAdmin SQL structure and data', 
         createdAt: '2026-11-17T10:00:00Z'
       },
       {
+        id: 'usr-petugas',
+        username: 'Petugas',
+        passwordHash: 'scrypt$pet$ugas',
+        role: 'petugas',
+        fullName: 'Petugas Kebersihan Kampus',
+        points: 0,
+        bottlesCount: 0,
+        foodWrappersCount: 0,
+        organicKg: 0,
+        improvementPercent: 0,
+        createdAt: '2026-11-17T10:00:00Z'
+      },
+      {
         id: 'usr-1',
         username: '2510501272@kampus.ac.id',
         passwordHash: 'scrypt$123$456',
@@ -116,11 +129,13 @@ test('generatePhpMyAdminSqlDump emits valid phpMyAdmin SQL structure and data', 
   assert.ok(dump.includes('-- phpMyAdmin SQL Dump'));
   assert.ok(dump.includes('CREATE DATABASE IF NOT EXISTS `vetbin_db`'));
   assert.ok(dump.includes('CREATE TABLE `users`'));
+  assert.ok(dump.includes("enum('admin','petugas','user')"));
   assert.ok(dump.includes('CREATE TABLE `campus_bins`'));
   assert.ok(dump.includes('CREATE TABLE `user_reports`'));
   assert.ok(dump.includes('CREATE TABLE `campus_vouchers`'));
   assert.ok(dump.includes('CREATE TABLE `redemption_records`'));
   assert.ok(dump.includes("'Admin'"));
+  assert.ok(dump.includes("'Petugas'"));
   assert.ok(dump.includes("'2510501272@kampus.ac.id'"));
   assert.ok(dump.includes("'Tong \\'kuning\\' utama'"));
   assert.ok(dump.includes('COMMIT;'));

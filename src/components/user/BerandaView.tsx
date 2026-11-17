@@ -11,11 +11,22 @@ import {
   FileText,
   BatteryCharging,
   ArrowRight,
-  MapPin
+  MapPin,
+  Truck
 } from 'lucide-react';
 
 export const BerandaView: React.FC = () => {
-  const { setUserTab, setIsAdminView, setAdminTab, bins, setSelectedBinId } = useApp();
+  const {
+    setUserTab,
+    setIsAdminView,
+    setAdminTab,
+    setIsPetugasView,
+    setPetugasTab,
+    authUser,
+    openLoginModal,
+    bins,
+    setSelectedBinId
+  } = useApp();
 
   return (
     <div className="space-y-12 pb-16">
@@ -221,32 +232,48 @@ export const BerandaView: React.FC = () => {
         </div>
       </section>
 
-      {/* Admin Callout Banner */}
+      {/* Staff & Admin Callout Banner */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-[#234629] rounded-3xl p-6 sm:p-8 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
+        <div className="bg-[#234629] rounded-3xl p-6 sm:p-8 text-white flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-sm">
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-emerald-200 text-xs font-semibold mb-2">
               <Shield className="w-3.5 h-3.5" />
-              Akses Pengelola Kampus
+              Akses Petugas &amp; Pengelola Kampus
             </div>
             <h3 className="text-xl sm:text-2xl font-bold">
-              Dashboard Admin &amp; Sarpras Kampus
+              Portal Petugas &amp; Dashboard Admin
             </h3>
             <p className="text-emerald-100/80 text-xs sm:text-sm mt-1 max-w-lg">
-              Kelola titik tong, cetak label QR siap tempel, dan pantau rekap laporan sarpras kampus.
+              Petugas kebersihan dapat login untuk menerima laporan &amp; rute pengosongan, sementara Admin mengelola titik tong dan laporan warga.
             </p>
           </div>
 
-          <button
-            onClick={() => {
-              setIsAdminView(true);
-              setAdminTab('ringkasan');
-            }}
-            className="px-5 py-3 rounded-xl font-bold text-slate-900 bg-white hover:bg-slate-100 shadow-xs active:scale-[0.98] transition-all text-xs sm:text-sm cursor-pointer whitespace-nowrap flex items-center gap-2 shrink-0"
-          >
-            <span>Masuk Dashboard Admin</span>
-            <ArrowRight className="w-4 h-4 text-[#234629]" />
-          </button>
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
+            <button
+              onClick={() => {
+                if (authUser?.role === 'petugas') {
+                  setIsPetugasView(true);
+                  setPetugasTab('beranda');
+                } else {
+                  openLoginModal('petugas');
+                }
+              }}
+              className="px-5 py-3 rounded-xl font-bold text-[#1A231C] bg-amber-300 hover:bg-amber-200 shadow-xs active:scale-[0.98] transition-all text-xs sm:text-sm cursor-pointer whitespace-nowrap flex items-center gap-2 shrink-0"
+            >
+              <Truck className="w-4 h-4 text-[#1A231C]" />
+              <span>Login Petugas</span>
+            </button>
+            <button
+              onClick={() => {
+                setIsAdminView(true);
+                setAdminTab('ringkasan');
+              }}
+              className="px-5 py-3 rounded-xl font-bold text-slate-900 bg-white hover:bg-slate-100 shadow-xs active:scale-[0.98] transition-all text-xs sm:text-sm cursor-pointer whitespace-nowrap flex items-center gap-2 shrink-0"
+            >
+              <span>Masuk Dashboard Admin</span>
+              <ArrowRight className="w-4 h-4 text-[#234629]" />
+            </button>
+          </div>
         </div>
       </section>
     </div>

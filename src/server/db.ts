@@ -47,7 +47,7 @@ function ensureDb(): DatabaseSync {
       id TEXT PRIMARY KEY,
       username TEXT NOT NULL UNIQUE,
       password_hash TEXT NOT NULL,
-      role TEXT NOT NULL CHECK(role IN ('admin', 'user')),
+      role TEXT NOT NULL CHECK(role IN ('admin', 'petugas', 'user')),
       full_name TEXT NOT NULL,
       points INTEGER NOT NULL DEFAULT 0,
       bottles_count INTEGER NOT NULL DEFAULT 0,
@@ -131,6 +131,35 @@ function ensureDb(): DatabaseSync {
     );
   `);
 
+  // Migrate existing users table if created before 'petugas' role was introduced
+  const usersSchema = db
+    .prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'users'")
+    .get() as { sql?: string } | undefined;
+  if (usersSchema?.sql && !usersSchema.sql.includes("'petugas'")) {
+    db.exec(`
+      PRAGMA foreign_keys = OFF;
+      BEGIN;
+      CREATE TABLE users_new (
+        id TEXT PRIMARY KEY,
+        username TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        role TEXT NOT NULL CHECK(role IN ('admin', 'petugas', 'user')),
+        full_name TEXT NOT NULL,
+        points INTEGER NOT NULL DEFAULT 0,
+        bottles_count INTEGER NOT NULL DEFAULT 0,
+        food_wrappers_count INTEGER NOT NULL DEFAULT 0,
+        organic_kg REAL NOT NULL DEFAULT 0,
+        improvement_percent INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL
+      );
+      INSERT INTO users_new SELECT * FROM users;
+      DROP TABLE users;
+      ALTER TABLE users_new RENAME TO users;
+      COMMIT;
+      PRAGMA foreign_keys = ON;
+    `);
+  }
+
   dbInstance = db;
   seedInitialDataIfEmpty(db);
   return db;
@@ -138,15 +167,15 @@ function ensureDb(): DatabaseSync {
 
 function seedInitialDataIfEmpty(db: DatabaseSync) {
   const userCountRow = db.prepare('SELECT COUNT(*) as cnt FROM users').get() as { cnt: number };
-  if (userCountRow.cnt === 0) {
-    const now = new Date().toISOString();
-    const insertUser = db.prepare(`
-      INSERT INTO users (
-        id, username, password_hash, role, full_name,
-        points, bottles_count, food_wrappers_count, organic_kg, improvement_percent, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
+  const now = new Date().toISOString();
+  const insertUser = db.prepare(`
+    INSERT INTO users (
+      id, username, password_hash, role, full_name,
+      points, bottles_count, food_wrappers_count, organic_kg, improvement_percent, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
 
+  if (userCountRow.cnt === 0) {
     // Default Admin account: Admin / Admin
     insertUser.run(
       'usr-admin',
@@ -154,6 +183,21 @@ function seedInitialDataIfEmpty(db: DatabaseSync) {
       hashPassword('Admin'),
       'admin',
       'Administrator Sarpras Kampus',
+      0,
+      0,
+      0,
+      0,
+      0,
+      now
+    );
+
+    // Default Petugas Kebersihan account: Petugas / Petugas
+    insertUser.run(
+      'usr-petugas',
+      'Petugas',
+      hashPassword('Petugas'),
+      'petugas',
+      'Petugas Kebersihan Kampus',
       0,
       0,
       0,
@@ -176,6 +220,24 @@ function seedInitialDataIfEmpty(db: DatabaseSync) {
       22,
       now
     );
+  } else {
+    // Ensure default Petugas account exists in pre-seeded databases
+    const existingPetugas = db.prepare("SELECT id FROM users WHERE role = 'petugas' OR username = 'Petugas'").get();
+    if (!existingPetugas) {
+      insertUser.run(
+        'usr-petugas',
+        'Petugas',
+        hashPassword('Petugas'),
+        'petugas',
+        'Petugas Kebersihan Kampus',
+        0,
+        0,
+        0,
+        0,
+        0,
+        now
+      );
+    }
   }
 
   const binCountRow = db.prepare('SELECT COUNT(*) as cnt FROM campus_bins').get() as { cnt: number };
@@ -479,8 +541,8 @@ export function registerCampusUser(
   if (!password || password.length < 4) {
     return { error: 'Password minimal 4 karakter.' };
   }
-  if (trimmedUser.toLowerCase() === 'admin') {
-    return { error: 'Username Admin tidak dapat didaftarkan ulang.' };
+  if (trimmedUser.toLowerCase() === 'admin' || trimmedUser.toLowerCase() === 'petugas') {
+    return { error: 'Username resmi Admin/Petugas tidak dapat didaftarkan ulang.' };
   }
 
   const existing = db.prepare('SELECT id FROM users WHERE LOWER(username) = LOWER(?)').get(trimmedUser);

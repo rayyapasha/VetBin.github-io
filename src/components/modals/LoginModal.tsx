@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp, LoginModalMode } from '../../context/AppContext';
-import { X, Shield, User, Lock, Eye, EyeOff, LogIn, UserPlus, AlertCircle } from 'lucide-react';
+import { X, Shield, User, Truck, Lock, Eye, EyeOff, LogIn, UserPlus, AlertCircle } from 'lucide-react';
 
 export const LoginModal: React.FC = () => {
   const {
@@ -88,31 +88,43 @@ export const LoginModal: React.FC = () => {
           <X className="w-5 h-5" />
         </button>
 
-        {/* Role Switcher */}
-        <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-2xl mb-5 mr-8">
+        {/* 3-Role Switcher: Mahasiswa, Petugas, Admin */}
+        <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100 rounded-2xl mb-5 mr-8">
           <button
             type="button"
             onClick={() => handleRoleSwitch('user')}
-            className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            className={`py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer whitespace-nowrap ${
               roleTab === 'user'
                 ? 'bg-white text-[#234629] shadow-2xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <User className="w-3.5 h-3.5" />
-            <span>User / Mahasiswa</span>
+            <User className="w-3.5 h-3.5 shrink-0" />
+            <span>Mahasiswa</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleRoleSwitch('petugas')}
+            className={`py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer whitespace-nowrap ${
+              roleTab === 'petugas'
+                ? 'bg-amber-400 text-[#1A231C] shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Truck className="w-3.5 h-3.5 shrink-0" />
+            <span>Petugas</span>
           </button>
           <button
             type="button"
             onClick={() => handleRoleSwitch('admin')}
-            className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            className={`py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer whitespace-nowrap ${
               roleTab === 'admin'
                 ? 'bg-[#234629] text-white shadow-2xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Shield className="w-3.5 h-3.5" />
-            <span>Admin Kampus</span>
+            <Shield className="w-3.5 h-3.5 shrink-0" />
+            <span>Admin</span>
           </button>
         </div>
 
@@ -121,15 +133,25 @@ export const LoginModal: React.FC = () => {
             className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-3 ${
               roleTab === 'admin'
                 ? 'bg-[#234629] text-emerald-300'
+                : roleTab === 'petugas'
+                ? 'bg-amber-100 text-amber-800'
                 : 'bg-[#E8EFE8] text-[#234629]'
             }`}
           >
-            {roleTab === 'admin' ? <Shield className="w-6 h-6" /> : <User className="w-6 h-6" />}
+            {roleTab === 'admin' ? (
+              <Shield className="w-6 h-6" />
+            ) : roleTab === 'petugas' ? (
+              <Truck className="w-6 h-6" />
+            ) : (
+              <User className="w-6 h-6" />
+            )}
           </div>
 
           <h2 id="login-modal-title" className="text-xl font-extrabold text-slate-900">
             {roleTab === 'admin'
               ? 'Masuk Dashboard Admin Kampus'
+              : roleTab === 'petugas'
+              ? 'Masuk Portal Petugas Kebersihan'
               : authAction === 'register'
               ? 'Daftar Akun Mahasiswa'
               : 'Masuk Akun Mahasiswa / User'}
@@ -137,6 +159,8 @@ export const LoginModal: React.FC = () => {
           <p className="text-xs text-slate-500 mt-1">
             {roleTab === 'admin'
               ? 'Akses pengelolaan titik tong, verifikasi laporan warga, dan ekspor database.'
+              : roleTab === 'petugas'
+              ? 'Kelola laporan masuk, peta tong, rute pengosongan, dan notifikasi tong penuh.'
               : authAction === 'register'
               ? 'Buat akun baru untuk mengumpulkan poin pilah sampah & menukar voucher kantin.'
               : 'Masuk untuk mengumpulkan poin QR, memantau dampak pribadi, dan menukar voucher.'}
@@ -168,7 +192,11 @@ export const LoginModal: React.FC = () => {
               htmlFor="login-username-input"
               className="block text-xs font-semibold text-slate-700 mb-1.5"
             >
-              {roleTab === 'admin' ? 'Username Admin' : 'Username / Email Kampus'}
+              {roleTab === 'admin'
+                ? 'Username Admin'
+                : roleTab === 'petugas'
+                ? 'Username Petugas'
+                : 'Username / Email Kampus'}
             </label>
             <div className="relative">
               <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -177,7 +205,11 @@ export const LoginModal: React.FC = () => {
                 type="text"
                 autoComplete="username"
                 placeholder={
-                  roleTab === 'admin' ? 'Masukkan username admin' : 'Contoh: nim@kampus.ac.id'
+                  roleTab === 'admin'
+                    ? 'Masukkan username admin'
+                    : roleTab === 'petugas'
+                    ? 'Masukkan username petugas (Petugas)'
+                    : 'Contoh: nim@kampus.ac.id'
                 }
                 value={username}
                 onChange={e => {
@@ -221,6 +253,13 @@ export const LoginModal: React.FC = () => {
             </div>
           </div>
 
+          {roleTab === 'petugas' && (
+            <p className="text-[11px] text-slate-500 bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-2">
+              Kredensial petugas default: username <strong className="text-slate-700">Petugas</strong> · password{' '}
+              <strong className="text-slate-700">Petugas</strong>
+            </p>
+          )}
+
           {errorMsg && (
             <div
               role="alert"
@@ -246,6 +285,8 @@ export const LoginModal: React.FC = () => {
                 ? 'Memproses...'
                 : roleTab === 'admin'
                 ? 'Masuk sebagai Admin'
+                : roleTab === 'petugas'
+                ? 'Masuk sebagai Petugas'
                 : authAction === 'register'
                 ? 'Daftar & Masuk'
                 : 'Masuk Sekarang'}

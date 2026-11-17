@@ -9,6 +9,7 @@ Platform web pengelolaan sampah kampus cerdas (**VetBin**) yang dilengkapi peta 
 | Peran | Username / Email | Password |
 | :--- | :--- | :--- |
 | **Admin Kampus** | `Admin` | `Admin` |
+| **Petugas Kebersihan** | `Petugas` | `Petugas` |
 | **Pengguna / Mahasiswa** | `2510501272@kampus.ac.id` | `2510501272@kampus.ac.id` |
 
 > Mahasiswa baru juga dapat mendaftar akun melalui tab **Daftar** pada modal Login, dan seluruh fitur peta, panduan pilah, serta pelaporan tetap dapat diakses langsung.

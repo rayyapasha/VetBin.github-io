@@ -43,9 +43,12 @@ import {
   subscribeLocalBroadcast
 } from '../services/localBrowserBackend';
 
-export type UserTab = 'beranda' | 'peta' | 'panduan' | 'lapor' | 'poin' | 'petugas';
+export type UserTab = 'beranda' | 'peta' | 'panduan' | 'lapor' | 'poin';
 export type AdminTab = 'ringkasan' | 'titik-tong' | 'qrcode' | 'mitra' | 'laporan';
-export type LoginModalMode = 'user' | 'admin';
+export type PetugasTab = 'beranda' | 'lapor' | 'peta-tong' | 'notifikasi';
+export type PetugasLaporSubTab = 'terima' | 'buat';
+export type PetugasPetaSubTab = 'peta' | 'rute';
+export type LoginModalMode = 'user' | 'petugas' | 'admin';
 
 interface ToastMessage {
   id: string;
@@ -65,10 +68,18 @@ interface AppContextType {
   // Navigation
   isAdminView: boolean;
   setIsAdminView: (val: boolean) => void;
+  isPetugasView: boolean;
+  setIsPetugasView: (val: boolean) => void;
   userTab: UserTab;
   setUserTab: (tab: UserTab) => void;
   adminTab: AdminTab;
   setAdminTab: (tab: AdminTab) => void;
+  petugasTab: PetugasTab;
+  setPetugasTab: (tab: PetugasTab) => void;
+  petugasLaporSubTab: PetugasLaporSubTab;
+  setPetugasLaporSubTab: (tab: PetugasLaporSubTab) => void;
+  petugasPetaSubTab: PetugasPetaSubTab;
+  setPetugasPetaSubTab: (tab: PetugasPetaSubTab) => void;
 
   // Auth & Login Modal
   authUser: AuthUser | null;
@@ -173,8 +184,12 @@ async function detectServerBackend(): Promise<'server' | 'local'> {
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Navigation state
   const [isAdminViewState, setIsAdminViewState] = useState<boolean>(false);
+  const [isPetugasViewState, setIsPetugasViewState] = useState<boolean>(false);
   const [userTab, setUserTab] = useState<UserTab>('beranda');
   const [adminTab, setAdminTab] = useState<AdminTab>('ringkasan');
+  const [petugasTab, setPetugasTab] = useState<PetugasTab>('beranda');
+  const [petugasLaporSubTab, setPetugasLaporSubTab] = useState<PetugasLaporSubTab>('terima');
+  const [petugasPetaSubTab, setPetugasPetaSubTab] = useState<PetugasPetaSubTab>('peta');
 
   // Auth state
   const [authToken, setAuthToken] = useState<string | null>(() => {
@@ -315,7 +330,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             });
             if (meRes.ok && active) {
               const meData = await meRes.json();
-              setAuthUser(meData.user || null);
+              const restored = meData.user || null;
+              setAuthUser(restored);
+              if (restored?.role === 'petugas') {
+                setIsPetugasViewState(true);
+                setPetugasTab('beranda');
+              }
             } else if (active) {
               persistToken(null);
               setAuthUser(null);
@@ -331,6 +351,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const restoredUser = localGetSessionUser(existingToken);
           if (restoredUser) {
             setAuthUser(restoredUser);
+            if (restoredUser.role === 'petugas') {
+              setIsPetugasViewState(true);
+              setPetugasTab('beranda');
+            }
           } else {
             persistToken(null);
             setAuthUser(null);
@@ -436,6 +460,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return;
       }
       if (authUserRef.current?.role === 'admin') {
+        setIsPetugasViewState(false);
         setIsAdminViewState(true);
       } else {
         setLoginModalMode('admin');
@@ -443,6 +468,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         showToast(
           'Login Admin Diperlukan',
           'Silakan masuk menggunakan akun Admin Kampus untuk membuka dashboard.',
+          'info'
+        );
+      }
+    },
+    [showToast]
+  );
+
+  const setIsPetugasView = useCallback(
+    (val: boolean) => {
+      if (!val) {
+        setIsPetugasViewState(false);
+        return;
+      }
+      if (authUserRef.current?.role === 'petugas') {
+        setIsAdminViewState(false);
+        setIsPetugasViewState(true);
+      } else {
+        setLoginModalMode('petugas');
+        setIsLoginModalOpen(true);
+        showToast(
+          'Login Petugas Diperlukan',
+          'Silakan masuk menggunakan akun Petugas Kebersihan untuk membuka portal tugas.',
           'info'
         );
       }
@@ -483,7 +530,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
         return {
           success: false,
-          error: 'Akun ini merupakan akun Mahasiswa/User biasa, bukan akun Admin Kampus.'
+          error: 'Akun ini bukan akun Admin Kampus. Gunakan tab login sesuai peran Anda.'
+        };
+      }
+
+      if (expectedRole === 'petugas' && data.user.role !== 'petugas') {
+        if (mode === 'server') {
+          await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${data.token}` }
+          }).catch(() => {});
+        } else {
+          localLogoutSession(data.token);
+        }
+        return {
+          success: false,
+          error: 'Akun ini bukan akun Petugas Kebersihan. Gunakan akun Petugas untuk masuk.'
         };
       }
 
@@ -491,11 +553,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setAuthUser(data.user);
       setIsLoginModalOpen(false);
 
-      if (data.user.role === 'admin' && expectedRole === 'admin') {
+      if (data.user.role === 'admin') {
+        setIsPetugasViewState(false);
         setIsAdminViewState(true);
         setAdminTab('ringkasan');
         showToast('Login Admin Berhasil', `Selamat datang, ${data.user.fullName}.`);
+      } else if (data.user.role === 'petugas') {
+        setIsAdminViewState(false);
+        setIsPetugasViewState(true);
+        setPetugasTab('beranda');
+        setPetugasLaporSubTab('terima');
+        setPetugasPetaSubTab('peta');
+        showToast('Login Petugas Berhasil', `Selamat bertugas, ${data.user.fullName}.`);
       } else {
+        setIsAdminViewState(false);
+        setIsPetugasViewState(false);
         showToast('Berhasil Masuk', `Selamat datang, ${data.user.username}!`);
       }
 
@@ -556,6 +628,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     persistToken(null);
     setAuthUser(null);
     setIsAdminViewState(false);
+    setIsPetugasViewState(false);
     setUserTab('beranda');
     showToast('Berhasil Keluar', 'Sesi akun Anda telah ditutup.', 'info');
   };
@@ -1061,10 +1134,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       value={{
         isAdminView: isAdminViewState,
         setIsAdminView,
+        isPetugasView: isPetugasViewState,
+        setIsPetugasView,
         userTab,
         setUserTab,
         adminTab,
         setAdminTab,
+        petugasTab,
+        setPetugasTab,
+        petugasLaporSubTab,
+        setPetugasLaporSubTab,
+        petugasPetaSubTab,
+        setPetugasPetaSubTab,
         authUser,
         authToken,
         isAuthLoading,

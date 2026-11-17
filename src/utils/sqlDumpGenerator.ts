@@ -9,7 +9,7 @@ export interface SqlDumpUserRow {
   id: string;
   username: string;
   passwordHash: string;
-  role: 'admin' | 'user';
+  role: 'admin' | 'petugas' | 'user';
   fullName: string;
   points: number;
   bottlesCount: number;
@@ -103,7 +103,7 @@ export function generatePhpMyAdminSqlDump(input: SqlDumpInput): string {
     '  `id` varchar(64) NOT NULL,',
     '  `username` varchar(150) NOT NULL,',
     '  `password_hash` varchar(255) NOT NULL,',
-    "  `role` enum('admin','user') NOT NULL DEFAULT 'user',",
+    "  `role` enum('admin','petugas','user') NOT NULL DEFAULT 'user',",
     '  `full_name` varchar(150) NOT NULL,',
     '  `points` int(11) NOT NULL DEFAULT 0,',
     '  `bottles_count` int(11) NOT NULL DEFAULT 0,',

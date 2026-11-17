@@ -63,6 +63,19 @@ function createInitialDb(): StandaloneDatabase {
         createdAt: now
       },
       {
+        id: 'usr-petugas',
+        username: 'Petugas',
+        password: 'Petugas',
+        role: 'petugas',
+        fullName: 'Petugas Kebersihan Kampus',
+        points: 0,
+        bottlesCount: 0,
+        foodWrappersCount: 0,
+        organicKg: 0,
+        improvementPercent: 0,
+        createdAt: now
+      },
+      {
         id: 'usr-2510501272',
         username: '2510501272@kampus.ac.id',
         password: '2510501272@kampus.ac.id',
@@ -90,6 +103,23 @@ function loadDb(): StandaloneDatabase {
     if (raw) {
       const parsed = JSON.parse(raw) as StandaloneDatabase;
       if (parsed && Array.isArray(parsed.bins) && Array.isArray(parsed.users)) {
+        const hasPetugas = parsed.users.some(u => u.role === 'petugas' || u.username === 'Petugas');
+        if (!hasPetugas) {
+          parsed.users.push({
+            id: 'usr-petugas',
+            username: 'Petugas',
+            password: 'Petugas',
+            role: 'petugas',
+            fullName: 'Petugas Kebersihan Kampus',
+            points: 0,
+            bottlesCount: 0,
+            foodWrappersCount: 0,
+            organicKg: 0,
+            improvementPercent: 0,
+            createdAt: new Date().toISOString()
+          });
+          saveDb(parsed);
+        }
         return parsed;
       }
     }
@@ -176,8 +206,8 @@ export function localRegisterUser(
   if (!password || password.length < 4) {
     return { error: 'Password minimal 4 karakter.' };
   }
-  if (trimmed.toLowerCase() === 'admin') {
-    return { error: 'Username Admin tidak dapat didaftarkan ulang.' };
+  if (trimmed.toLowerCase() === 'admin' || trimmed.toLowerCase() === 'petugas') {
+    return { error: 'Username resmi Admin/Petugas tidak dapat didaftarkan ulang.' };
   }
   if (db.users.some(u => u.username.toLowerCase() === trimmed.toLowerCase())) {
     return { error: 'Username/email ini sudah terdaftar. Silakan masuk.' };

@@ -5,8 +5,7 @@ import {
   MapPin,
   Sparkles,
   AlertCircle,
-  Award,
-  Truck
+  Award
 } from 'lucide-react';
 
 export const MobileBottomNav: React.FC = () => {
@@ -18,7 +17,6 @@ export const MobileBottomNav: React.FC = () => {
     { id: 'panduan', label: 'Panduan', icon: Sparkles },
     { id: 'lapor', label: 'Lapor', icon: AlertCircle },
     { id: 'poin', label: 'Poin', icon: Award },
-    { id: 'petugas', label: 'Petugas', icon: Truck },
   ];
 
   return (
